@@ -107,10 +107,9 @@ const About: React.FC = () => {
               <div className="w-20 h-20 mx-auto mb-4 bg-gradient-nature rounded-full flex items-center justify-center">
                 <HeartPulse className="h-10 w-10 text-white" />
               </div>
-              <h3 className="font-merriweather text-xl font-semibold mb-3">Health</h3>
+              <h3 className="font-merriweather text-xl font-semibold mb-3">Social</h3>
               <p className="font-poppins text-sm text-muted-foreground">
-                Many rural and tribal products, particularly those related to food, medicine, and wellness, possess inherent health benefits
-                due to their natural ingredients and traditional preparation methods.
+                We support the holistic well-being of communities by fostering economic growth and sharing the health benefits inherent in traditional goods.
               </p>
             </Reveal>
 
