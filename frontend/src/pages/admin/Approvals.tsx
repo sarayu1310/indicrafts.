@@ -155,7 +155,7 @@ const ApprovalList: React.FC<{ status: 'pending' | 'approved' | 'rejected' }> = 
                 </div>
             </CardContent>
             <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-md md:max-w-lg w-[95vw] md:w-auto max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{preview?.name}</DialogTitle>
                     </DialogHeader>
@@ -167,7 +167,7 @@ const ApprovalList: React.FC<{ status: 'pending' | 'approved' | 'rejected' }> = 
 
             {/* Price Breakdown Modal - Admin Only */}
             <Dialog open={!!priceBreakdown} onOpenChange={(o) => !o && setPriceBreakdown(null)}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-md md:max-w-lg w-[95vw] md:w-auto max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Price Breakdown - {priceBreakdown?.name}</DialogTitle>
                     </DialogHeader>
@@ -243,12 +243,12 @@ const ApprovalList: React.FC<{ status: 'pending' | 'approved' | 'rejected' }> = 
                                                 <span>Distance Charge:</span>
                                                 <span>₹{priceBreakdown.priceBreakdown.shippingDetails.breakdown?.distanceCharge}</span>
                                             </div>
-                                                    <div className="flex justify-between">
-                                                        <span>Distance (km):</span>
-                                                        <span>
-                                                            {priceBreakdown.priceBreakdown.shippingDetails.breakdown?.distanceKm ?? priceBreakdown.priceBreakdown.shippingDetails.distanceKm ?? 'N/A'}
-                                                        </span>
-                                                    </div>
+                                            <div className="flex justify-between">
+                                                <span>Distance (km):</span>
+                                                <span>
+                                                    {priceBreakdown.priceBreakdown.shippingDetails.breakdown?.distanceKm ?? priceBreakdown.priceBreakdown.shippingDetails.distanceKm ?? 'N/A'}
+                                                </span>
+                                            </div>
                                             <div className="flex justify-between font-semibold">
                                                 <span>Total Shipping:</span>
                                                 <span>₹{priceBreakdown.priceBreakdown.shippingDetails.totalCost}</span>
