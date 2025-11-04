@@ -142,7 +142,7 @@ const sendOrderConfirmationEmail = async (email, order) => {
 const sendVerificationEmail = async (email, token) => {
   try {
     // For development/testing - just log the verification URL
-    const frontendBase = process.env.FRONTEND_URL || "https://indicrafts.netlify.app";
+    const frontendBase = process.env.FRONTEND_URL || "https://indicrafts-ixaj.onrender.com/";
     const verificationUrl = `${frontendBase}/verify-email?token=${token}`;
     console.log("📧 Verification Email (Development Mode):");
     console.log(`To: ${email}`);
@@ -188,7 +188,7 @@ const sendVerificationEmail = async (email, token) => {
 const sendPasswordResetEmail = async (email, token) => {
   try {
     // For development/testing - just log the reset URL
-    const frontendBase = process.env.FRONTEND_URL || "https://indicrafts.netlify.app";
+    const frontendBase = process.env.FRONTEND_URL || "https://indicrafts-ixaj.onrender.com/";
     const resetUrl = `${frontendBase}/reset-password?token=${token}`;
     console.log("📧 Password Reset Email (Development Mode):");
     console.log(`To: ${email}`);
