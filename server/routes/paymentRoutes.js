@@ -22,10 +22,10 @@ router.post("/create-order", async (req, res) => {
     } = req.body;
 
     // Validate env configuration early with a clear message
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    if (!process.env.VITE_RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       return res.status(500).json({
         message: "Razorpay is not configured on the server",
-        hint: "Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your backend .env and restart the server",
+        hint: "Set VITE_RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your backend .env and restart the server",
       });
     }
 
@@ -83,9 +83,9 @@ router.post("/verify", async (req, res) => {
 
 // Public endpoint to get key id for frontend
 router.get("/key", (req, res) => {
-  if (!process.env.RAZORPAY_KEY_ID)
-    return res.status(500).json({ message: "RAZORPAY_KEY_ID not set" });
-  res.json({ keyId: process.env.RAZORPAY_KEY_ID });
+  if (!process.env.VITE_RAZORPAY_KEY_ID)
+    return res.status(500).json({ message: "VITE_RAZORPAY_KEY_ID not set" });
+  res.json({ keyId: process.env.VITE_RAZORPAY_KEY_ID });
 });
 
 // Confirm payment and create order in DB (authenticated)
