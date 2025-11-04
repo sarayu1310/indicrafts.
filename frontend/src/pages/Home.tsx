@@ -132,7 +132,7 @@ const Home: React.FC = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-secondary/20 rounded-full flex items-center justify-center">
                 <Leaf className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-merriweather text-xl font-semibold mb-2">Eco-Friendly</h3>
+              <h3 className="font-merriweather text-xl font-semibold mb-2">Natural-Friendly</h3>
               <p className="font-poppins text-sm text-muted-foreground">
                 Sustainable products made with natural materials
               </p>
