@@ -7,6 +7,15 @@ interface ApiResponse<T = any> {
   error?: string;
 }
 
+function getRoleScopedTokenKey(): string {
+  if (typeof window !== 'undefined') {
+    const path = window.location.pathname || '';
+    if (path.startsWith('/admin')) return 'admin_token';
+    if (path.startsWith('/producer')) return 'producer_token';
+  }
+  return 'customer_token';
+}
+
 class ApiService {
   private baseURL: string;
 
@@ -19,7 +28,7 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(getRoleScopedTokenKey());
 
     const config: RequestInit = {
       headers: {
@@ -197,7 +206,7 @@ class ApiService {
   }
 
   async createProduct(formData: FormData): Promise<ApiResponse<{ product: any }>> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(getRoleScopedTokenKey());
     const response = await fetch(`${this.baseURL}/products`, {
       method: 'POST',
       headers: {
@@ -217,7 +226,7 @@ class ApiService {
   }
 
   async updateProduct(id: string, payload: FormData | Record<string, any>): Promise<ApiResponse<{ product: any }>> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(getRoleScopedTokenKey());
     let response: Response;
     if (payload instanceof FormData) {
       response = await fetch(`${this.baseURL}/products/${id}`, {

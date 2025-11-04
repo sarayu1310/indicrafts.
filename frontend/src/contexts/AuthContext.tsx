@@ -58,9 +58,18 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
+function getStorageKeyForPath(): string {
+    if (typeof window !== 'undefined') {
+        const path = window.location.pathname || '';
+        if (path.startsWith('/admin')) return 'admin_token';
+        if (path.startsWith('/producer')) return 'producer_token';
+    }
+    return 'customer_token';
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [token, setToken] = useState<string | null>(localStorage.getItem(getStorageKeyForPath()));
     const [isLoading, setIsLoading] = useState(true);
 
     const isAuthenticated = !!user && !!token;
@@ -68,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Initialize auth state on mount
     useEffect(() => {
         const initializeAuth = async () => {
-            const storedToken = localStorage.getItem('token');
+            const storedToken = localStorage.getItem(getStorageKeyForPath());
             if (storedToken) {
                 try {
                     const response = await apiService.getProfile();
@@ -77,7 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 } catch (error: any) {
                     // Only clear token on explicit 401; ignore transient dev errors (e.g., server restart)
                     if (error?.status === 401) {
-                        localStorage.removeItem('token');
+                        localStorage.removeItem(getStorageKeyForPath());
                         setToken(null);
                         setUser(null);
                     }
@@ -95,7 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const response = await apiService.login({ email, password, role });
 
             if (response.token && response.user) {
-                localStorage.setItem('token', response.token);
+                const key = role === 'admin' ? 'admin_token' : role === 'producer' ? 'producer_token' : 'customer_token';
+                localStorage.setItem(key, response.token);
                 setToken(response.token);
                 setUser(response.user);
             } else {
@@ -129,7 +139,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
+        localStorage.removeItem(getStorageKeyForPath());
         setToken(null);
         setUser(null);
     };

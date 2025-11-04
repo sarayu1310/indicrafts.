@@ -145,12 +145,14 @@ const Navbar: React.FC = () => {
                         Profile
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/wishlist" className="flex items-center">
-                        <Heart className="h-4 w-4 mr-2 text-burnt-orange" />
-                        Wishlist
-                      </Link>
-                    </DropdownMenuItem>
+                    {user?.role !== 'producer' && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/wishlist" className="flex items-center">
+                          <Heart className="h-4 w-4 mr-2 text-burnt-orange" />
+                          Wishlist
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={logout} className="flex items-center text-red-600">
                       <LogOut className="h-4 w-4 mr-2" />
@@ -257,14 +259,16 @@ const Navbar: React.FC = () => {
                           <Settings className="h-4 w-4 mr-2" />
                           Profile
                         </Link>
-                        <Link
-                          to="/wishlist"
-                          onClick={() => setIsOpen(false)}
-                          className="flex items-center py-2 font-poppins"
-                        >
-                          <Heart className="h-4 w-4 mr-2 text-burnt-orange" />
-                          Wishlist
-                        </Link>
+                        {user?.role !== 'producer' && (
+                          <Link
+                            to="/wishlist"
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center py-2 font-poppins"
+                          >
+                            <Heart className="h-4 w-4 mr-2 text-burnt-orange" />
+                            Wishlist
+                          </Link>
+                        )}
                         <button
                           onClick={() => {
                             logout();

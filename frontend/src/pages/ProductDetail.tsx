@@ -14,7 +14,7 @@ const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { addToCart } = useCart();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
 
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
@@ -220,14 +220,16 @@ const ProductDetail: React.FC = () => {
                                     {product.name}
                                 </h1>
                                 <div className="flex space-x-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleWishlist}
-                                        className={isWishlisted ? 'text-red-500' : 'text-gray-500'}
-                                    >
-                                        <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
-                                    </Button>
+                                    {user?.role !== 'producer' && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={handleWishlist}
+                                            className={isWishlisted ? 'text-red-500' : 'text-gray-500'}
+                                        >
+                                            <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
+                                        </Button>
+                                    )}
                                     <Button variant="ghost" size="sm" onClick={handleShare}>
                                         <Share2 className="h-5 w-5" />
                                     </Button>
