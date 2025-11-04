@@ -17,7 +17,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
@@ -85,15 +85,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {/* Quick Actions */}
               <div className={`absolute top-2 right-2 flex flex-col space-y-2 transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
                 }`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleWishlist}
-                  className={`h-8 w-8 p-0 bg-white/90 hover:bg-white ${isWishlisted ? 'text-red-500' : 'text-gray-600'
-                    }`}
-                >
-                  <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
-                </Button>
+                {user?.role !== 'producer' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleWishlist}
+                    className={`h-8 w-8 p-0 bg-white/90 hover:bg-white ${isWishlisted ? 'text-red-500' : 'text-gray-600'
+                      }`}
+                  >
+                    <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
