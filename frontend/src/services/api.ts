@@ -85,6 +85,12 @@ class ApiService {
     experience?: number | string;
     story?: string;
     productTypes?: string[];
+    // producer bank details
+    bankAccountName?: string;
+    bankAccountNumber?: string;
+    bankIfsc?: string;
+    bankName?: string;
+    bankBranch?: string;
   }): Promise<ApiResponse> {
     return this.request('/auth/register', {
       method: 'POST',

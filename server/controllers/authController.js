@@ -27,6 +27,12 @@ const registerUser = async (req, res) => {
       yearsOfExperience,
       story,
       productTypes,
+      // bank details (producer)
+      bankAccountName,
+      bankAccountNumber,
+      bankIfsc,
+      bankName,
+      bankBranch,
     } = req.body;
 
     // Validation
@@ -105,6 +111,13 @@ const registerUser = async (req, res) => {
             : [],
         producerVerified: false,
         kycDocuments: [],
+        bankDetails: {
+          accountName: bankAccountName,
+          accountNumber: bankAccountNumber,
+          ifsc: bankIfsc,
+          bankName,
+          branch: bankBranch,
+        },
       };
     }
 
@@ -354,7 +367,8 @@ const getWishlist = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate({
       path: "wishlist",
-      select: "name price description imageUrl category producer producerName producerLocation inStock quantity",
+      select:
+        "name price description imageUrl category producer producerName producerLocation inStock quantity",
     });
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json({ wishlist: user.wishlist || [] });

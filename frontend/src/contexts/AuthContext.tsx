@@ -42,6 +42,12 @@ interface RegisterData {
     yearsOfExperience?: number | string;
     story?: string;
     productTypes?: string[];
+    // Producer bank details (optional)
+    bankAccountName?: string;
+    bankAccountNumber?: string;
+    bankIfsc?: string;
+    bankName?: string;
+    bankBranch?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

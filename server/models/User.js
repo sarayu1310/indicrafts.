@@ -33,6 +33,13 @@ const userSchema = new mongoose.Schema(
           productTypes: [{ type: String }], // list of product/craft types
           producerVerified: { type: Boolean, default: false },
           kycDocuments: [{ type: String }], // URLs or filenames for KYC / proof docs
+          bankDetails: {
+            accountName: { type: String },
+            accountNumber: { type: String },
+            ifsc: { type: String },
+            bankName: { type: String },
+            branch: { type: String },
+          },
         },
         { _id: false }
       ),

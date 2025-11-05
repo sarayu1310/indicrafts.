@@ -24,6 +24,13 @@ const ProducerRegister: React.FC = () => {
     experience: '',
     story: ''
   });
+  const [bank, setBank] = useState({
+    bankAccountName: '',
+    bankAccountNumber: '',
+    bankIfsc: '',
+    bankName: '',
+    bankBranch: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -38,6 +45,9 @@ const ProducerRegister: React.FC = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+  const handleBankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBank({ ...bank, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,6 +84,11 @@ const ProducerRegister: React.FC = () => {
         experience: formData.experience,
         story: formData.story,
         productTypes: formData.craftType ? [formData.craftType] : [],
+        bankAccountName: bank.bankAccountName,
+        bankAccountNumber: bank.bankAccountNumber,
+        bankIfsc: bank.bankIfsc,
+        bankName: bank.bankName,
+        bankBranch: bank.bankBranch,
       });
       toast.success('Registration successful! Please check your email to verify your account.');
       navigate('/verify-email?redirect=' + encodeURIComponent(redirectUrl));
@@ -125,6 +140,34 @@ const ProducerRegister: React.FC = () => {
                     disabled={isLoading}
                   />
                 </div>
+              </div>
+
+              {/* Bank Details */}
+              <div className="p-4 rounded border bg-muted/30">
+                <h3 className="font-poppins font-semibold mb-3">Bank Details</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="bankAccountName" className="font-poppins">Account Holder Name</Label>
+                    <Input id="bankAccountName" name="bankAccountName" value={bank.bankAccountName} onChange={handleBankChange} className="mt-1" disabled={isLoading} />
+                  </div>
+                  <div>
+                    <Label htmlFor="bankAccountNumber" className="font-poppins">Account Number</Label>
+                    <Input id="bankAccountNumber" name="bankAccountNumber" value={bank.bankAccountNumber} onChange={handleBankChange} className="mt-1" disabled={isLoading} />
+                  </div>
+                  <div>
+                    <Label htmlFor="bankIfsc" className="font-poppins">IFSC Code</Label>
+                    <Input id="bankIfsc" name="bankIfsc" value={bank.bankIfsc} onChange={handleBankChange} className="mt-1" disabled={isLoading} />
+                  </div>
+                  <div>
+                    <Label htmlFor="bankName" className="font-poppins">Bank Name</Label>
+                    <Input id="bankName" name="bankName" value={bank.bankName} onChange={handleBankChange} className="mt-1" disabled={isLoading} />
+                  </div>
+                  <div>
+                    <Label htmlFor="bankBranch" className="font-poppins">Branch</Label>
+                    <Input id="bankBranch" name="bankBranch" value={bank.bankBranch} onChange={handleBankChange} className="mt-1" disabled={isLoading} />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">These details are kept secure and used for payouts only.</p>
               </div>
 
               <div>
