@@ -7,6 +7,7 @@ const { authenticateToken, requireRole } = require("../middleware/auth");
 const {
   sendOrderConfirmationEmail,
   sendProducerOrderNotificationEmail,
+  sendAdminOrderNotificationEmail,
 } = require("../services/emailService");
 const Product = require("../models/Product");
 const User = require("../models/User");
@@ -177,12 +178,18 @@ router.post(
             if (it.product) {
               const productIdStr = String(it.product);
               const currentQty = quantityByProductId.get(productIdStr) || 0;
-              quantityByProductId.set(productIdStr, currentQty + (Number(it.quantity) || 1));
+              quantityByProductId.set(
+                productIdStr,
+                currentQty + (Number(it.quantity) || 1)
+              );
             }
           });
 
           // Decrease quantities for each product
-          for (const [productIdStr, qtyToDeduct] of quantityByProductId.entries()) {
+          for (const [
+            productIdStr,
+            qtyToDeduct,
+          ] of quantityByProductId.entries()) {
             await Product.updateOne(
               { _id: productIdStr },
               { $inc: { quantity: -qtyToDeduct } }
@@ -238,15 +245,36 @@ router.post(
       // Populate customer for email
       await orderDoc.populate("customer", "email firstName lastName");
 
-      // Fire-and-forget: email confirmation (do not block order response)
+      // Send email confirmation (fire-and-forget, but log errors)
       try {
         const customerEmail = orderDoc?.customer?.email || req.user.email;
         if (customerEmail) {
-          sendOrderConfirmationEmail(customerEmail, orderDoc);
+          // Include totals (with weightRate) in order object for email
+          const orderForEmail = {
+            ...orderDoc.toObject(),
+            totals: totals, // Include weightRate and other totals from request
+          };
+
+          // Don't await to avoid blocking response, but handle errors
+          sendOrderConfirmationEmail(customerEmail, orderForEmail).catch(
+            (err) => {
+              console.error("Failed to send order confirmation email:", err);
+              // Log the error but don't fail the order
+            }
+          );
+        } else {
+          console.warn(
+            "No customer email found for order confirmation:",
+            orderDoc._id
+          );
         }
-      } catch (_) {}
+      } catch (err) {
+        console.error("Error in email confirmation block:", err);
+        // Don't fail the order if email fails
+      }
 
       // Send notifications to producers for their products
+      let productsWithProducers = [];
       try {
         // Get unique producer IDs from order items
         const producerIds = [
@@ -259,13 +287,13 @@ router.post(
 
         if (producerIds.length > 0) {
           // Get product details with producer information
-          const products = await Product.find({
+          productsWithProducers = await Product.find({
             _id: { $in: producerIds },
-          }).populate("producer", "email firstName lastName");
+          }).populate("producer", "email firstName lastName name");
 
           // Group products by producer
           const producerProducts = {};
-          products.forEach((product) => {
+          productsWithProducers.forEach((product) => {
             const producerId = product.producer._id.toString();
             if (!producerProducts[producerId]) {
               producerProducts[producerId] = {
@@ -291,16 +319,34 @@ router.post(
                 items: producerOrderItems,
               };
 
+              // Don't await to avoid blocking response, but handle errors
               sendProducerOrderNotificationEmail(
                 producer.email,
                 producerOrder,
                 products
-              );
+              ).catch((err) => {
+                console.error(
+                  `Failed to send producer notification email to ${producer.email}:`,
+                  err
+                );
+                // Log the error but don't fail the order
+              });
             }
           });
         }
       } catch (error) {
         console.error("Error sending producer notifications:", error);
+      }
+
+      // Send admin notification email
+      try {
+        const orderForAdmin = {
+          ...orderDoc.toObject(),
+          totals: totals, // Include weightRate and other totals from request
+        };
+        sendAdminOrderNotificationEmail(orderForAdmin, productsWithProducers);
+      } catch (error) {
+        console.error("Error sending admin notification:", error);
       }
 
       res.status(201).json({ message: "Order recorded", order: orderDoc });

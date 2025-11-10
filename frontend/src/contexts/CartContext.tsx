@@ -14,6 +14,7 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  buyNow: (product: Product, quantity: number) => Promise<void>;
   totalItems: number;
   totalPrice: number;
   // Address and checkout related
@@ -132,6 +133,46 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     toast.success('Cart cleared');
   };
 
+  const buyNow = async (product: Product, quantity: number) => {
+    // Clear cart first
+    setItems([]);
+    setDeliveryAddress(null);
+    setCheckoutComplete(false);
+
+    // Fetch full product details if needed
+    let prodToAdd: any = product;
+    if (!product.weight || product.weight === 0) {
+      try {
+        const res: any = await apiService.getProductById(product.id);
+        const p = res?.product;
+        if (p) {
+          prodToAdd = {
+            id: p._id,
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            weight: p.weight,
+            originalPrice: p.originalPrice,
+            shippingCost: p.shippingCost,
+            category: p.category,
+            image: p.imageUrl,
+            producer: {
+              name: p.producerName || 'Producer',
+              location: p.producerLocation || '—',
+            },
+            inStock: p.inStock,
+            priceBreakdown: p.priceBreakdown,
+          };
+        }
+      } catch (e) {
+        console.warn('Failed to fetch full product details for buy now; using provided object', e);
+      }
+    }
+
+    // Add product with specified quantity
+    setItems([{ ...prodToAdd, quantity }]);
+  };
+
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -143,6 +184,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         removeFromCart,
         updateQuantity,
         clearCart,
+        buyNow,
         totalItems,
         totalPrice,
         deliveryAddress,

@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { addToCart } = useCart();
+    const { addToCart, buyNow } = useCart();
     const { isAuthenticated, user } = useAuth();
 
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -145,6 +145,32 @@ const ProductDetail: React.FC = () => {
         const maxQuantity = productQuantity > 0 ? Math.min(productQuantity, 10) : 10;
         if (newQuantity >= 1 && newQuantity <= maxQuantity) {
             setQuantity(newQuantity);
+        }
+    };
+
+    const handleBuyNow = async () => {
+        if (!isAuthenticated) {
+            toast.error('Please login to continue with checkout');
+            navigate('/login?redirect=/checkout');
+            return;
+        }
+
+        if (isOutOfStock) {
+            toast.error('Product is out of stock');
+            return;
+        }
+
+        if (quantity > productQuantity) {
+            toast.error(`Only ${productQuantity} items available`);
+            return;
+        }
+
+        try {
+            await buyNow(product, quantity);
+            navigate('/checkout');
+        } catch (error) {
+            console.error('Error in buy now:', error);
+            toast.error('Failed to proceed with buy now. Please try again.');
         }
     };
 
@@ -336,6 +362,8 @@ const ProductDetail: React.FC = () => {
                                 variant="outline"
                                 className="w-full"
                                 size="lg"
+                                onClick={handleBuyNow}
+                                disabled={isOutOfStock}
                             >
                                 Buy Now
                             </Button>

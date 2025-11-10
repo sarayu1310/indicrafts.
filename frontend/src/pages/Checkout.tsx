@@ -21,6 +21,18 @@ const Checkout: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [customerShipping, setCustomerShipping] = useState<number>(0);
 
+    // Calculate total weight rate from all items
+    const totalWeightRate = items.reduce((sum, item) => {
+        const priceBreakdown = (item as any).priceBreakdown?.shippingDetails;
+        const approvedBreakdown = (item as any).approvedPriceBreakdown?.shippingDetails;
+        const shippingDetails = priceBreakdown || approvedBreakdown;
+
+        // Try baseCost first, then breakdown.baseRate as fallback
+        const weightRate = shippingDetails?.baseCost ??
+            shippingDetails?.breakdown?.baseRate ?? 0;
+        return sum + (weightRate * (item.quantity || 1));
+    }, 0);
+
     // Recalculate customer delivery shipping when address or cart changes
     useEffect(() => {
         const calc = async () => {
@@ -256,7 +268,7 @@ const Checkout: React.FC = () => {
             const { keyId } = await api.getRazorpayKey();
 
             // 2. Create order on backend (amount in paise)
-            const amountPaise = Math.round((totalPrice + customerShipping) * 100);
+            const amountPaise = Math.round((totalPrice + customerShipping + totalWeightRate) * 100);
             const order = await api.createPaymentOrder({ amount: amountPaise });
 
             // 3. Open Razorpay Checkout
@@ -284,7 +296,8 @@ const Checkout: React.FC = () => {
                         const totals = {
                             subtotal: totalPrice,
                             shipping: customerShipping,
-                            total: totalPrice + customerShipping
+                            weightRate: totalWeightRate,
+                            total: totalPrice + customerShipping + totalWeightRate
                         };
 
                         // Debug log exact payload sent to confirmPayment
@@ -407,9 +420,13 @@ const Checkout: React.FC = () => {
                                 <span className="font-poppins">Shipping to your address</span>
                                 <span className="font-poppins">₹{customerShipping.toLocaleString()}</span>
                             </div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-poppins">Weight Rate</span>
+                                <span className="font-poppins">₹{totalWeightRate.toLocaleString()}</span>
+                            </div>
                             <div className="flex justify-between items-center border-t pt-2">
                                 <span className="font-poppins font-medium">Order Total</span>
-                                <span className="font-merriweather text-xl font-bold text-primary">₹{(totalPrice + customerShipping).toLocaleString()}</span>
+                                <span className="font-merriweather text-xl font-bold text-primary">₹{(totalPrice + customerShipping + totalWeightRate).toLocaleString()}</span>
                             </div>
                             <p className="text-sm text-muted-foreground mt-2">
                                 Product prices already include producer-to-hub shipping • Additional line is delivery to your address
@@ -517,7 +534,7 @@ const Checkout: React.FC = () => {
             <Card>
                 <CardContent className="py-6">
                     <div className="space-y-2">
-                        <p className="font-poppins"><strong>Order Total:</strong> ₹{totalPrice.toLocaleString()}</p>
+                        <p className="font-poppins"><strong>Order Total:</strong> ₹{(totalPrice + customerShipping + totalWeightRate).toLocaleString()}</p>
                         <p className="font-poppins"><strong>Payment Method:</strong> Cash on Delivery</p>
                         <p className="font-poppins"><strong>Estimated Delivery:</strong> 3-5 business days</p>
                     </div>
