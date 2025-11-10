@@ -96,7 +96,7 @@ const Footer: React.FC = () => {
             <div className="space-y-3 font-poppins text-sm">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
-                <span>indicrafts@gmail.com</span>
+                <span>indicrafts2u@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />

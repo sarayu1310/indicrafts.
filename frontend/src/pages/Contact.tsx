@@ -100,7 +100,7 @@ const Contact: React.FC = () => {
                   <div className="ml-4">
                     <h3 className="font-merriweather font-semibold mb-1">Email</h3>
                     <p className="font-poppins text-sm text-muted-foreground">
-                      indicrafts@gmail.com
+                      indicrafts2u@gmail.com
                     </p>
                   </div>
                 </CardContent>
