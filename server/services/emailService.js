@@ -496,21 +496,9 @@ const sendAdminOrderNotificationEmail = async (
       })
       .join("");
 
-    // Build recipients: always include configured EMAIL_USER and the fixed admin inbox
-    const adminFixed = "indicrafts2u@gmail.com";
-    const recipients = Array.from(
-      new Set(
-        [
-          process.env.EMAIL_USER,
-          process.env.ADMIN_NOTIFY_EMAIL,
-          adminFixed,
-        ].filter(Boolean)
-      )
-    );
-
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: recipients,
+      to: process.env.EMAIL_USER,
       subject: `New Order Placed – Order Summary & Producer Details`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
