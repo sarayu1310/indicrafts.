@@ -114,12 +114,14 @@ const sendOrderConfirmationEmail = async (email, order) => {
                 ).toLocaleString()}</td>
               </tr>
               ${
-                order.totals?.weightRate
+                order.totals?.weightRate !== undefined &&
+                order.totals?.weightRate !== null &&
+                Number(order.totals.weightRate) > 0
                   ? `
               <tr>
-                <td colspan="2" style="padding:8px 12px; text-align:right;">Weight Rate</td>
+                <td colspan="2" style="padding:8px 12px; text-align:right;">Weight Cost</td>
                 <td style="padding:8px 12px; text-align:right;">₹${Number(
-                  order.totals.weightRate || 0
+                  order.totals.weightRate
                 ).toLocaleString()}</td>
               </tr>
               `
