@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Store } from 'lucide-react';
+import { Store, Upload, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordField } from '@/components/ui/password-field';
@@ -32,6 +32,8 @@ const ProducerRegister: React.FC = () => {
     bankBranch: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [certificateFile, setCertificateFile] = useState<File | null>(null);
+  const [certificatePreview, setCertificatePreview] = useState<string | null>(null);
   const { register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,12 +52,53 @@ const ProducerRegister: React.FC = () => {
     setBank({ ...bank, [e.target.name]: e.target.value });
   };
 
+  const handleCertificateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please upload an image (JPEG, PNG, WebP) or PDF file');
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size must be less than 5MB');
+        return;
+      }
+
+      setCertificateFile(file);
+
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setCertificatePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setCertificatePreview(null);
+      }
+    }
+  };
+
+  const handleRemoveCertificate = () => {
+    setCertificateFile(null);
+    setCertificatePreview(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password ||
       !formData.businessName || !formData.location || !formData.craftType || !formData.experience || !formData.story) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (!certificateFile) {
+      toast.error('Please upload your artisan certificate');
       return;
     }
 
@@ -89,6 +132,7 @@ const ProducerRegister: React.FC = () => {
         bankIfsc: bank.bankIfsc,
         bankName: bank.bankName,
         bankBranch: bank.bankBranch,
+        certificate: certificateFile,
       });
       toast.success('Registration successful! Please check your email to verify your account.');
       navigate('/verify-email?redirect=' + encodeURIComponent(redirectUrl));
@@ -270,6 +314,72 @@ const ProducerRegister: React.FC = () => {
                   className="mt-1"
                   disabled={isLoading}
                 />
+              </div>
+
+              {/* Certificate Upload */}
+              <div>
+                <Label htmlFor="certificate" className="font-poppins">
+                  Artisan Certificate <span className="text-red-500">*</span>
+                </Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Upload a certificate or document that verifies you are a verified artisan (Image or PDF, max 5MB)
+                </p>
+                {!certificateFile ? (
+                  <div className="mt-1">
+                    <label
+                      htmlFor="certificate"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG, PDF (MAX. 5MB)</p>
+                      </div>
+                      <input
+                        id="certificate"
+                        type="file"
+                        className="hidden"
+                        accept="image/*,.pdf"
+                        onChange={handleCertificateChange}
+                        disabled={isLoading}
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="mt-1 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-8 w-8 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">{certificateFile.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(certificateFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemoveCertificate}
+                        disabled={isLoading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {certificatePreview && (
+                      <div className="mt-3">
+                        <img
+                          src={certificatePreview}
+                          alt="Certificate preview"
+                          className="max-w-full h-auto max-h-48 rounded border"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>

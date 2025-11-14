@@ -91,7 +91,43 @@ class ApiService {
     bankIfsc?: string;
     bankName?: string;
     bankBranch?: string;
+    // certificate file (for producer registration)
+    certificate?: File;
   }): Promise<ApiResponse> {
+    // If producer registration with certificate, use FormData
+    if (userData.role === 'producer' && userData.certificate) {
+      const formData = new FormData();
+      formData.append('firstName', userData.firstName);
+      formData.append('lastName', userData.lastName);
+      formData.append('email', userData.email);
+      formData.append('password', userData.password);
+      formData.append('role', 'producer');
+      if (userData.phone) formData.append('phone', userData.phone);
+      if (userData.businessName) formData.append('businessName', userData.businessName);
+      if (userData.location) formData.append('location', userData.location);
+      if (userData.craftType) formData.append('craftType', userData.craftType);
+      if (userData.experience) formData.append('experience', String(userData.experience));
+      if (userData.story) formData.append('story', userData.story);
+      if (userData.productTypes) formData.append('productTypes', JSON.stringify(userData.productTypes));
+      if (userData.bankAccountName) formData.append('bankAccountName', userData.bankAccountName);
+      if (userData.bankAccountNumber) formData.append('bankAccountNumber', userData.bankAccountNumber);
+      if (userData.bankIfsc) formData.append('bankIfsc', userData.bankIfsc);
+      if (userData.bankName) formData.append('bankName', userData.bankName);
+      if (userData.bankBranch) formData.append('bankBranch', userData.bankBranch);
+      formData.append('certificate', userData.certificate);
+
+      const response = await fetch(`${this.baseURL}/auth/register`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+      return data;
+    }
+
+    // Regular JSON registration for customers
     return this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),

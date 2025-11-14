@@ -48,6 +48,8 @@ interface RegisterData {
     bankIfsc?: string;
     bankName?: string;
     bankBranch?: string;
+    // Certificate file (required for producer)
+    certificate?: File;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

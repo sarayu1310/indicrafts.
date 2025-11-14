@@ -6,13 +6,14 @@ const {
   sendVerificationEmail,
   sendPasswordResetEmail,
 } = require("../services/emailService");
+const { cloudinary } = require("../services/cloudinary");
 
 const JWT_SECRET = process.env.JWT_SECRET || "45ca9f4309621562bc3991c1242c83d8";
 
 // @desc Register new user
 const registerUser = async (req, res) => {
   try {
-    const {
+    let {
       firstName,
       lastName,
       email,
@@ -34,6 +35,16 @@ const registerUser = async (req, res) => {
       bankName,
       bankBranch,
     } = req.body;
+
+    // Parse productTypes if it's a JSON string (from FormData)
+    if (productTypes && typeof productTypes === "string") {
+      try {
+        productTypes = JSON.parse(productTypes);
+      } catch (e) {
+        // If parsing fails, treat as single value array
+        productTypes = productTypes ? [productTypes] : [];
+      }
+    }
 
     // Validation
     if (!firstName || !lastName || !email || !password) {
@@ -85,6 +96,49 @@ const registerUser = async (req, res) => {
           .json({ message: "All producer fields must be provided" });
       }
 
+      // Validate certificate is required for producer registration
+      if (!req.file) {
+        return res
+          .status(400)
+          .json({
+            message: "Certificate file is required for producer registration",
+          });
+      }
+
+      // Upload certificate to Cloudinary
+      let certificateData = null;
+      try {
+        const uploadFromBuffer = (buffer) =>
+          new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              {
+                folder: "indicrafts/certificates",
+                resource_type: "auto", // Auto-detect image or PDF
+              },
+              (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+              }
+            );
+            stream.end(buffer);
+          });
+
+        const uploadResult = await uploadFromBuffer(req.file.buffer);
+        certificateData = {
+          url: uploadResult.secure_url,
+          publicId: uploadResult.public_id,
+          uploadedAt: new Date(),
+        };
+      } catch (uploadError) {
+        console.error("Certificate upload error:", uploadError);
+        return res
+          .status(500)
+          .json({
+            message: "Failed to upload certificate",
+            error: uploadError.message,
+          });
+      }
+
       // Populate nested producer subdocument
       newUserData.producer = {
         businessName,
@@ -111,6 +165,7 @@ const registerUser = async (req, res) => {
             : [],
         producerVerified: false,
         kycDocuments: [],
+        certificate: certificateData,
         bankDetails: {
           accountName: bankAccountName,
           accountNumber: bankAccountNumber,
