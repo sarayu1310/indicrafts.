@@ -122,7 +122,7 @@ const Home: React.FC = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-secondary/20 rounded-full flex items-center justify-center">
                 <Users className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-merriweather text-xl font-semibold mb-2">Empower Communities</h3>
+              <h3 className="font-merriweather text-xl font-semibold mb-2">Empowering Communities</h3>
               <p className="font-poppins text-sm text-muted-foreground">
                 Support rural livelihoods and preserve traditional crafts
               </p>
@@ -142,7 +142,7 @@ const Home: React.FC = () => {
               <div className="w-16 h-16 mx-auto mb-4 bg-secondary/20 rounded-full flex items-center justify-center">
                 <Heart className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-merriweather text-xl font-semibold mb-2">Made with Love</h3>
+              <h3 className="font-merriweather text-xl font-semibold mb-2">Made with Indigenous Knowledge </h3>
               <p className="font-poppins text-sm text-muted-foreground">
                 Each piece tells a story of tradition and craftsmanship
               </p>
