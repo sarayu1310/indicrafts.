@@ -1,0 +1,51 @@
+const mongoose = require("mongoose");
+
+const reviewSchema = new mongoose.Schema(
+  {
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+      index: true,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+    },
+    // Optional: Allow users to edit their reviews
+    edited: {
+      type: Boolean,
+      default: false,
+    },
+    editedAt: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Compound index to ensure one review per user per product
+reviewSchema.index({ product: 1, user: 1 }, { unique: true });
+
+// Virtual for user's name (will be populated)
+reviewSchema.virtual("userName").get(function () {
+  return this.user?.name || this.user?.firstName || "Anonymous";
+});
+
+module.exports = mongoose.model("Review", reviewSchema);
+

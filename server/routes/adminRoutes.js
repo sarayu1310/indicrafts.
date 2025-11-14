@@ -4,6 +4,7 @@ const { authenticateToken, requireRole } = require("../middleware/auth");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
+const Review = require("../models/Review");
 const shippingService = require("../services/shippingService");
 
 // All admin routes require admin auth
@@ -241,6 +242,91 @@ router.get("/orders", async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to fetch orders", error: err.message });
+  }
+});
+
+// GET /api/admin/reviews - list all reviews with filtering
+router.get("/reviews", async (req, res) => {
+  try {
+    const { page = 1, limit = 20, productId, userId, rating, search } = req.query;
+    const filter = {};
+
+    if (productId) filter.product = productId;
+    if (userId) filter.user = userId;
+    if (rating) filter.rating = Number(rating);
+
+    // Search in comments
+    if (search) {
+      filter.comment = { $regex: String(search), $options: "i" };
+    }
+
+    const reviews = await Review.find(filter)
+      .populate("product", "name imageUrl category")
+      .populate("user", "firstName lastName name email")
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit));
+
+    const total = await Review.countDocuments(filter);
+
+    // Get statistics
+    const stats = await Review.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: null,
+          totalReviews: { $sum: 1 },
+          averageRating: { $avg: "$rating" },
+          ratingDistribution: {
+            $push: "$rating",
+          },
+        },
+      },
+    ]);
+
+    let reviewStats = {
+      totalReviews: 0,
+      averageRating: 0,
+      ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    };
+
+    if (stats.length > 0) {
+      reviewStats.totalReviews = stats[0].totalReviews || 0;
+      reviewStats.averageRating = stats[0].averageRating || 0;
+      stats[0].ratingDistribution.forEach((rating) => {
+        reviewStats.ratingDistribution[rating] =
+          (reviewStats.ratingDistribution[rating] || 0) + 1;
+      });
+    }
+
+    res.json({
+      reviews,
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      stats: reviewStats,
+    });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch reviews", error: err.message });
+  }
+});
+
+// DELETE /api/admin/reviews/:id - delete a review (admin only)
+router.delete("/reviews/:id", async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    await Review.findByIdAndDelete(req.params.id);
+    res.json({ message: "Review deleted successfully" });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to delete review", error: err.message });
   }
 });
 

@@ -18,7 +18,7 @@ const UsersPage: React.FC = () => {
                 setUsers((res as any).users || []);
                 setTotal((res as any).total || 0);
             } catch (e: any) {
-                setError(e?.message || 'Failed to load users');
+                setError(e?.message || 'Failed to load customers');
             } finally {
                 setLoading(false);
             }
@@ -28,7 +28,7 @@ const UsersPage: React.FC = () => {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">Users</h1>
+                <h1 className="text-2xl font-semibold">Customers</h1>
                 <div>
                     <input
                         className="border rounded px-3 py-1 text-sm"
@@ -60,7 +60,7 @@ const UsersPage: React.FC = () => {
                         {loading ? (
                             <tr><td className="p-4" colSpan={11}>Loading…</td></tr>
                         ) : users.length === 0 ? (
-                            <tr><td className="p-4" colSpan={11}>No users found</td></tr>
+                            <tr><td className="p-4" colSpan={11}>No customers found</td></tr>
                         ) : (
                             users.map((u) => (
                                 <tr key={u._id} className="border-t">

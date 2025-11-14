@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart, Eye, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Eye, Star, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Product } from '@/lib/data';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import api from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { getCategoryImportance } from '@/lib/categoryImportance';
 
 interface ProductCardProps {
   product: Product;
@@ -61,13 +63,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     navigate(`/product/${product.id}`);
   };
 
+  const categoryInfo = getCategoryImportance(product.category);
+
   return (
-    <Card
-      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleViewDetails}
-    >
+    <HoverCard openDelay={300} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <Card
+          className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 relative"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onClick={handleViewDetails}
+        >
       <CardContent className="p-0">
         {/* Image Container with Hover Zoom */}
         <div className="relative overflow-hidden rounded-t-lg bg-gray-50">
@@ -139,6 +145,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <div className="absolute top-2 left-2">
                 <Badge variant="secondary" className="text-xs">
                   {product.category}
+                  {categoryInfo && (
+                    <Info className="h-3 w-3 ml-1 inline-block text-primary/70" />
+                  )}
                 </Badge>
               </div>
             </div>
@@ -187,7 +196,45 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Hide producer-to-hub breakdown from customers */}
         </div>
       </CardContent>
-    </Card>
+        </Card>
+      </HoverCardTrigger>
+      {categoryInfo && (
+        <HoverCardContent 
+          className="w-72 max-w-[90vw] p-3 z-[100] shadow-xl border-2 border-primary/20 bg-white/98 backdrop-blur-sm" 
+          side="right" 
+          align="start" 
+          sideOffset={12}
+          avoidCollisions={true}
+          collisionPadding={8}
+        >
+          <div className="space-y-3">
+            <div className="border-b border-primary/10 pb-2">
+              <h4 className="font-semibold text-sm text-primary leading-tight">{product.category}</h4>
+            </div>
+            <div className="space-y-2.5 max-h-[60vh] overflow-y-auto">
+              <div>
+                <h5 className="font-semibold text-xs mb-1.5 flex items-center gap-1.5 text-amber-700">
+                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full flex-shrink-0"></span>
+                  <span>Cultural/Traditional Importance</span>
+                </h5>
+                <p className="text-[11px] text-muted-foreground leading-relaxed pl-4">
+                  {categoryInfo.cultural}
+                </p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-xs mb-1.5 flex items-center gap-1.5 text-green-700">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></span>
+                  <span>Environmental Importance</span>
+                </h5>
+                <p className="text-[11px] text-muted-foreground leading-relaxed pl-4">
+                  {categoryInfo.environmental}
+                </p>
+              </div>
+            </div>
+          </div>
+        </HoverCardContent>
+      )}
+    </HoverCard>
   );
 };
 

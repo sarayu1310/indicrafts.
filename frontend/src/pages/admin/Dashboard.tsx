@@ -29,7 +29,7 @@ const AdminDashboard: React.FC = () => {
             {/* Basic Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                    { label: 'Users', value: stats?.usersCount },
+                    { label: 'Customers', value: stats?.usersCount },
                     { label: 'Producers', value: stats?.producersCount },
                     { label: 'Products', value: stats?.productsCount },
                     { label: 'Orders', value: stats?.ordersCount },
