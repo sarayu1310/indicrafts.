@@ -273,14 +273,17 @@ class ApiService {
   async createReview(productId: string, rating: number, comment?: string): Promise<ApiResponse<{ review: any }>> {
     return this.request('/reviews', {
       method: 'POST',
-      body: JSON.stringify({ productId, rating, comment }),
+      body: JSON.stringify({ productId, rating, comment: comment || '' }),
     });
   }
 
   async updateReview(reviewId: string, rating?: number, comment?: string): Promise<ApiResponse<{ review: any }>> {
+    const body: any = {};
+    if (rating !== undefined) body.rating = rating;
+    if (comment !== undefined) body.comment = comment;
     return this.request(`/reviews/${reviewId}`, {
       method: 'PUT',
-      body: JSON.stringify({ rating, comment }),
+      body: JSON.stringify(body),
     });
   }
 

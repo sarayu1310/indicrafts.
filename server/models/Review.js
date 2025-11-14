@@ -24,8 +24,8 @@ const reviewSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 1000,
+      default: "",
     },
-    // Optional: Allow users to edit their reviews
     edited: {
       type: Boolean,
       default: false,
@@ -39,13 +39,7 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-// Compound index to ensure one review per user per product
+// Ensure one review per user per product
 reviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
-// Virtual for user's name (will be populated)
-reviewSchema.virtual("userName").get(function () {
-  return this.user?.name || this.user?.firstName || "Anonymous";
-});
-
 module.exports = mongoose.model("Review", reviewSchema);
-

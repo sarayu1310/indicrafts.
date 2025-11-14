@@ -13,12 +13,7 @@ const router = express.Router();
 router.get("/product/:productId", getProductReviews);
 
 // POST /api/reviews - Create a review (authenticated customers only)
-router.post(
-  "/",
-  authenticateToken,
-  requireRole(["customer"]),
-  createReview
-);
+router.post("/", authenticateToken, requireRole(["customer"]), createReview);
 
 // PUT /api/reviews/:reviewId - Update a review (authenticated, owner only)
 router.put(
@@ -37,4 +32,3 @@ router.delete(
 );
 
 module.exports = router;
-

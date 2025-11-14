@@ -8,12 +8,13 @@ const getProductReviews = async (req, res) => {
     const { productId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
-    // Verify product exists
+    // Validate product exists
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Get reviews with pagination
     const reviews = await Review.find({ product: productId })
       .populate("user", "name firstName lastName email")
       .sort({ createdAt: -1 })
@@ -22,30 +23,36 @@ const getProductReviews = async (req, res) => {
 
     const total = await Review.countDocuments({ product: productId });
 
-    // Calculate average rating
-    const ratingStats = await Review.aggregate([
+    // Calculate statistics
+    const statsResult = await Review.aggregate([
       { $match: { product: new mongoose.Types.ObjectId(productId) } },
       {
         $group: {
           _id: null,
           averageRating: { $avg: "$rating" },
           totalReviews: { $sum: 1 },
-          ratingDistribution: {
-            $push: "$rating",
-          },
+          ratingDistribution: { $push: "$rating" },
         },
       },
     ]);
 
-    let averageRating = 0;
-    let totalReviews = 0;
-    let ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let stats = {
+      averageRating: 0,
+      totalReviews: 0,
+      ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    };
 
-    if (ratingStats.length > 0) {
-      averageRating = ratingStats[0].averageRating || 0;
-      totalReviews = ratingStats[0].totalReviews || 0;
-      ratingStats[0].ratingDistribution.forEach((rating) => {
-        ratingDistribution[rating] = (ratingDistribution[rating] || 0) + 1;
+    if (statsResult.length > 0) {
+      stats.averageRating =
+        Math.round((statsResult[0].averageRating || 0) * 10) / 10;
+      stats.totalReviews = statsResult[0].totalReviews || 0;
+
+      // Count rating distribution
+      statsResult[0].ratingDistribution.forEach((rating) => {
+        if (rating >= 1 && rating <= 5) {
+          stats.ratingDistribution[rating] =
+            (stats.ratingDistribution[rating] || 0) + 1;
+        }
       });
     }
 
@@ -57,15 +64,13 @@ const getProductReviews = async (req, res) => {
         total,
         totalPages: Math.ceil(total / Number(limit)),
       },
-      stats: {
-        averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
-        totalReviews,
-        ratingDistribution,
-      },
+      stats,
     });
   } catch (err) {
     console.error("Error fetching reviews:", err);
-    res.status(500).json({ message: "Failed to fetch reviews", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch reviews", error: err.message });
   }
 };
 
@@ -75,24 +80,34 @@ const createReview = async (req, res) => {
     const { productId, rating, comment } = req.body;
     const userId = req.user._id;
 
+    // Validation
     if (!productId || !rating) {
-      return res.status(400).json({ message: "Product ID and rating are required" });
+      return res
+        .status(400)
+        .json({ message: "Product ID and rating are required" });
     }
 
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({ message: "Rating must be between 1 and 5" });
+    if (rating < 1 || rating > 5 || !Number.isInteger(Number(rating))) {
+      return res
+        .status(400)
+        .json({ message: "Rating must be an integer between 1 and 5" });
     }
 
-    // Verify product exists
+    // Validate product exists
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
     // Check if user already reviewed this product
-    const existingReview = await Review.findOne({ product: productId, user: userId });
+    const existingReview = await Review.findOne({
+      product: productId,
+      user: userId,
+    });
     if (existingReview) {
-      return res.status(400).json({ message: "You have already reviewed this product" });
+      return res
+        .status(400)
+        .json({ message: "You have already reviewed this product" });
     }
 
     // Create review
@@ -112,11 +127,14 @@ const createReview = async (req, res) => {
     });
   } catch (err) {
     if (err.code === 11000) {
-      // Duplicate key error (unique index violation)
-      return res.status(400).json({ message: "You have already reviewed this product" });
+      return res
+        .status(400)
+        .json({ message: "You have already reviewed this product" });
     }
     console.error("Error creating review:", err);
-    res.status(500).json({ message: "Failed to create review", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to create review", error: err.message });
   }
 };
 
@@ -132,15 +150,19 @@ const updateReview = async (req, res) => {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    // Check if user owns this review
+    // Check ownership
     if (String(review.user) !== String(userId)) {
-      return res.status(403).json({ message: "You can only edit your own reviews" });
+      return res
+        .status(403)
+        .json({ message: "You can only edit your own reviews" });
     }
 
-    // Update review
+    // Update fields
     if (rating !== undefined) {
-      if (rating < 1 || rating > 5) {
-        return res.status(400).json({ message: "Rating must be between 1 and 5" });
+      if (rating < 1 || rating > 5 || !Number.isInteger(Number(rating))) {
+        return res
+          .status(400)
+          .json({ message: "Rating must be an integer between 1 and 5" });
       }
       review.rating = Number(rating);
     }
@@ -161,7 +183,9 @@ const updateReview = async (req, res) => {
     });
   } catch (err) {
     console.error("Error updating review:", err);
-    res.status(500).json({ message: "Failed to update review", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update review", error: err.message });
   }
 };
 
@@ -177,9 +201,11 @@ const deleteReview = async (req, res) => {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    // Check if user owns this review or is an admin
+    // Check ownership or admin
     if (String(review.user) !== String(userId) && userRole !== "admin") {
-      return res.status(403).json({ message: "You can only delete your own reviews" });
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own reviews" });
     }
 
     await Review.findByIdAndDelete(reviewId);
@@ -187,7 +213,9 @@ const deleteReview = async (req, res) => {
     res.json({ message: "Review deleted successfully" });
   } catch (err) {
     console.error("Error deleting review:", err);
-    res.status(500).json({ message: "Failed to delete review", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete review", error: err.message });
   }
 };
 
@@ -197,4 +225,3 @@ module.exports = {
   updateReview,
   deleteReview,
 };
-
