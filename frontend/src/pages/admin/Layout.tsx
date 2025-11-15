@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, ShoppingCart, ShieldCheck, Menu, Users as UsersIcon, Store, Star } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, ShieldCheck, Menu, Users as UsersIcon, Store } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
     const { user, logout } = useAuth();
@@ -51,13 +51,6 @@ const AdminLayout: React.FC = () => {
                         >
                             <ShieldCheck size={18} />
                             <span className={`${collapsed ? 'hidden' : 'inline'}`}>Approvals</span>
-                        </NavLink>
-                        <NavLink
-                            to="/admin/reviews"
-                            className={({ isActive }) => `flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${isActive ? 'bg-muted font-medium' : 'hover:bg-muted/50'}`}
-                        >
-                            <Star size={18} />
-                            <span className={`${collapsed ? 'hidden' : 'inline'}`}>Reviews</span>
                         </NavLink>
                         <div className={`px-3 text-xs uppercase text-muted-foreground mt-3 ${collapsed ? 'hidden' : 'block'}`}>Directory</div>
                         <NavLink

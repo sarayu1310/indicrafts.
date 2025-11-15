@@ -46,7 +46,6 @@ import OrdersPage from "./pages/admin/Orders";
 import ApprovalsPage from "./pages/admin/Approvals";
 import UsersPage from "./pages/admin/Users";
 import ProducersPage from "./pages/admin/Producers";
-import ReviewsPage from "./pages/admin/Reviews";
 
 const queryClient = new QueryClient();
 
@@ -149,7 +148,6 @@ const App = () => (
                 <Route index element={<AdminDashboard />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="approvals" element={<ApprovalsPage />} />
-                <Route path="reviews" element={<ReviewsPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="producers" element={<ProducersPage />} />
               </Route>

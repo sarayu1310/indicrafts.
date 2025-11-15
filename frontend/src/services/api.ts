@@ -340,37 +340,6 @@ class ApiService {
     return this.request(`/products/${id}`, { method: 'DELETE' });
   }
 
-  // Reviews
-  async getProductReviews(productId: string, params?: { page?: number; limit?: number }): Promise<ApiResponse<{ reviews: any[]; pagination: any; stats: any }>> {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', String(params.page));
-    if (params?.limit) queryParams.append('limit', String(params.limit));
-    const qs = queryParams.toString();
-    const endpoint = `/reviews/product/${productId}${qs ? `?${qs}` : ''}`;
-    console.log('Fetching reviews from:', `${this.baseURL}${endpoint}`);
-    return this.request(endpoint);
-  }
-
-  async createReview(productId: string, rating: number, comment?: string): Promise<ApiResponse<{ review: any }>> {
-    return this.request('/reviews', {
-      method: 'POST',
-      body: JSON.stringify({ productId, rating, comment: comment || '' }),
-    });
-  }
-
-  async updateReview(reviewId: string, rating?: number, comment?: string): Promise<ApiResponse<{ review: any }>> {
-    const body: any = {};
-    if (rating !== undefined) body.rating = rating;
-    if (comment !== undefined) body.comment = comment;
-    return this.request(`/reviews/${reviewId}`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    });
-  }
-
-  async deleteReview(reviewId: string): Promise<ApiResponse> {
-    return this.request(`/reviews/${reviewId}`, { method: 'DELETE' });
-  }
 
   // Admin endpoints
   async getAdminStats(): Promise<ApiResponse<{ stats: any }>> {
@@ -428,22 +397,6 @@ class ApiService {
     return this.request(`/admin/users/${id}`);
   }
 
-  // Admin reviews
-  async getAdminReviews(params?: { page?: number; limit?: number; productId?: string; userId?: string; rating?: number; search?: string }): Promise<ApiResponse<{ reviews: any[]; total: number; page: number; limit: number; stats: any }>> {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', String(params.page));
-    if (params?.limit) queryParams.append('limit', String(params.limit));
-    if (params?.productId) queryParams.append('productId', params.productId);
-    if (params?.userId) queryParams.append('userId', params.userId);
-    if (params?.rating) queryParams.append('rating', String(params.rating));
-    if (params?.search) queryParams.append('search', params.search);
-    const qs = queryParams.toString();
-    return this.request(`/admin/reviews${qs ? `?${qs}` : ''}`);
-  }
-
-  async deleteAdminReview(id: string): Promise<ApiResponse> {
-    return this.request(`/admin/reviews/${id}`, { method: 'DELETE' });
-  }
 
   // Payments (Razorpay)
   async getRazorpayKey(): Promise<{ keyId: string }> {

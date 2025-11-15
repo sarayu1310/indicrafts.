@@ -35,7 +35,6 @@ const productRoutes = require("./routes/productRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const shippingRoutes = require("./routes/shippingRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -54,38 +53,14 @@ app.use("/api/products", productRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/shipping", shippingRoutes);
-app.use("/api/reviews", reviewRoutes);
-
-// Log all registered routes for debugging
-console.log("Registered API routes:");
-console.log("  - /api/auth");
-console.log("  - /api/contact");
-console.log("  - /api/products");
-console.log("  - /api/admin");
-console.log("  - /api/payments");
-console.log("  - /api/shipping");
-console.log("  - /api/reviews");
-console.log("Review routes registered at /api/reviews");
 
 // Catch-all handler for undefined routes (should be last)
 app.use((req, res) => {
   console.error(`404 - Route not found: ${req.method} ${req.originalUrl}`);
-  console.error(`Request headers:`, req.headers);
-  console.error(`Available routes: /api/admin/reviews, /api/reviews, etc.`);
   res.status(404).json({
     message: "Route not found",
     path: req.originalUrl,
     method: req.method,
-    availableRoutes: [
-      "/api/health",
-      "/api/admin/reviews",
-      "/api/admin/orders",
-      "/api/admin/products",
-      "/api/reviews/test",
-      "/api/reviews/product/:productId",
-      "/api/reviews (POST)",
-      "/api/reviews/:reviewId (PUT, DELETE)",
-    ],
   });
 });
 
