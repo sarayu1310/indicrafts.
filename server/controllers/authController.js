@@ -13,6 +13,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "45ca9f4309621562bc3991c1242c83d8";
 // @desc Register new user
 const registerUser = async (req, res) => {
   try {
+    // Ensure we can destructure even if req.body is undefined due to Content-Type mismatch
+    const body = req.body || {};
     let {
       firstName,
       lastName,
@@ -34,7 +36,7 @@ const registerUser = async (req, res) => {
       bankIfsc,
       bankName,
       bankBranch,
-    } = req.body;
+    } = body;
 
     // Parse productTypes if it's a JSON string (from FormData)
     if (productTypes && typeof productTypes === "string") {
