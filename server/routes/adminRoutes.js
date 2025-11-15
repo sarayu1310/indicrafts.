@@ -8,6 +8,10 @@ const Review = require("../models/Review");
 const shippingService = require("../services/shippingService");
 
 // All admin routes require admin auth
+router.use((req, res, next) => {
+  console.log(`[Admin Routes] ${req.method} ${req.path} - ${req.originalUrl}`);
+  next();
+});
 router.use(authenticateToken, requireRole(["admin"]));
 
 // GET /api/admin/products - list products by approval status (default: pending)
@@ -247,6 +251,7 @@ router.get("/orders", async (req, res) => {
 
 // GET /api/admin/reviews - list all reviews with filtering
 router.get("/reviews", async (req, res) => {
+  console.log("[Admin Reviews] GET /api/admin/reviews", req.query);
   try {
     const { page = 1, limit = 20, productId, userId, rating, search } = req.query;
     const filter = {};

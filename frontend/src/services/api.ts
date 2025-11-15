@@ -41,18 +41,61 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+
+      // Check if response is JSON before parsing
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
+      let data: any;
+
+      if (isJson) {
+        try {
+          const text = await response.text();
+          if (!text || text.trim() === '') {
+            throw new Error('Empty response from server');
+          }
+          data = JSON.parse(text);
+        } catch (jsonError) {
+          // If JSON parsing fails, log the actual response
+          console.error('Failed to parse JSON response. Status:', response.status);
+          console.error('Response might be HTML or invalid JSON');
+          throw new Error(`Server returned invalid JSON. Status: ${response.status}. ${response.status === 404 ? 'Endpoint not found.' : 'Please check the API endpoint.'}`);
+        }
+      } else {
+        // Response is not JSON (likely HTML error page)
+        const text = await response.text();
+        console.error('Non-JSON response received:', text.substring(0, 200));
+
+        if (response.status === 404) {
+          throw new Error(`API endpoint not found: ${endpoint}. Please check if the server is running and the route exists.`);
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error('Authentication failed. Please login again.');
+        } else {
+          throw new Error(`Server error (${response.status}). Please try again later.`);
+        }
+      }
 
       if (!response.ok) {
-        const err: any = new Error(data.message || 'An error occurred');
+        const err: any = new Error(data.message || `Request failed with status ${response.status}`);
         err.status = response.status;
         err.data = data;
         throw err;
       }
 
       return data;
-    } catch (error) {
-      console.error('API Error:', error);
+    } catch (error: any) {
+      console.error('API Error:', {
+        endpoint,
+        url,
+        error: error.message,
+        status: error.status,
+      });
+
+      // Re-throw with more context if it's not already a proper error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error(`Network error: Unable to reach the server. Please check your connection and ensure the server is running.`);
+      }
+
       throw error;
     }
   }
@@ -303,7 +346,9 @@ class ApiService {
     if (params?.page) queryParams.append('page', String(params.page));
     if (params?.limit) queryParams.append('limit', String(params.limit));
     const qs = queryParams.toString();
-    return this.request(`/reviews/product/${productId}${qs ? `?${qs}` : ''}`);
+    const endpoint = `/reviews/product/${productId}${qs ? `?${qs}` : ''}`;
+    console.log('Fetching reviews from:', `${this.baseURL}${endpoint}`);
+    return this.request(endpoint);
   }
 
   async createReview(productId: string, rating: number, comment?: string): Promise<ApiResponse<{ review: any }>> {
