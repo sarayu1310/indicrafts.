@@ -14,7 +14,19 @@ const JWT_SECRET = process.env.JWT_SECRET || "45ca9f4309621562bc3991c1242c83d8";
 const registerUser = async (req, res) => {
   try {
     // Ensure we can destructure even if req.body is undefined due to Content-Type mismatch
-    const body = req.body || {};
+    // const body = req.body || {};
+    // const body = req.body && Object.keys(req.body).length ? req.body : JSON.parse(JSON.stringify(req.body || {}));
+    const body = req.body;
+
+    if (!body || !body.firstName) {
+      // If req.body is empty, request might be JSON — parse it manually
+      try {
+        const raw = req.body ? req.body : JSON.parse(req.rawBody || "{}");
+        Object.assign(body, raw);
+      } catch (e) {
+        console.error("Body parse error:", e);
+      }
+    }
     let {
       firstName,
       lastName,
