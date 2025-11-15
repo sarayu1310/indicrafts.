@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiService } from '@/services/api';
+import axios from "axios";
 
 interface User {
     id: string;
@@ -19,7 +20,8 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string, role?: 'customer' | 'producer' | 'admin') => Promise<void>;
-    register: (userData: RegisterData) => Promise<void>;
+    // register: (userData: RegisterData) => Promise<void>;
+    register: (formData: FormData) => Promise<void>;
     logout: () => void;
     verifyEmail: (token: string) => Promise<void>;
     forgotPassword: (email: string) => Promise<void>;
@@ -128,24 +130,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    const register = async (userData: RegisterData) => {
-        try {
-            setIsLoading(true);
-            const response = await apiService.register(userData);
+    // const register = async (userData: RegisterData) => {
+    //     try {
+    //         setIsLoading(true);
+    //         const response = await apiService.register(userData);
 
-            if (response.user) {
-                setUser(response.user);
-                // Don't set token here as user needs to verify email first
-            } else {
-                throw new Error('Invalid response from server');
-            }
-        } catch (error) {
-            console.error('Registration error:', error);
-            throw error;
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    //         if (response.user) {
+    //             setUser(response.user);
+    //             // Don't set token here as user needs to verify email first
+    //         } else {
+    //             throw new Error('Invalid response from server');
+    //         }
+    //     } catch (error) {
+    //         console.error('Registration error:', error);
+    //         throw error;
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
+
+    const register = async (formData: FormData) => {
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/auth/register`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return res.data;
+  } catch (err: any) {
+    throw err.response?.data || { message: "Registration failed" };
+  }
+};
+
 
     const logout = () => {
         localStorage.removeItem(getStorageKeyForPath());

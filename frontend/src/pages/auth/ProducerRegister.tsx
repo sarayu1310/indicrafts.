@@ -88,60 +88,129 @@ const ProducerRegister: React.FC = () => {
     setCertificatePreview(null);
   };
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password ||
+  //     !formData.businessName || !formData.location || !formData.craftType || !formData.experience || !formData.story) {
+  //     toast.error('Please fill in all required fields');
+  //     return;
+  //   }
+
+  //   if (!certificateFile) {
+  //     toast.error('Please upload your artisan certificate');
+  //     return;
+  //   }
+
+  //   if (formData.password.length < 6) {
+  //     toast.error('Password must be at least 6 characters long');
+  //     return;
+  //   }
+
+  //   if (formData.password !== formData.confirmPassword) {
+  //     toast.error('Passwords do not match');
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsLoading(true);
+  //     await register({
+  //       firstName: formData.firstName,
+  //       lastName: formData.lastName,
+  //       email: formData.email,
+  //       password: formData.password,
+  //       role: 'producer',
+  //       phone: formData.phone,
+  //       businessName: formData.businessName,
+  //       location: formData.location,
+  //       craftType: formData.craftType,
+  //       experience: formData.experience,
+  //       story: formData.story,
+  //       productTypes: formData.craftType ? [formData.craftType] : [],
+  //       bankAccountName: bank.bankAccountName,
+  //       bankAccountNumber: bank.bankAccountNumber,
+  //       bankIfsc: bank.bankIfsc,
+  //       bankName: bank.bankName,
+  //       bankBranch: bank.bankBranch,
+  //       certificate: certificateFile,
+  //     });
+  //     toast.success('Registration successful! Please check your email to verify your account.');
+  //     navigate('/verify-email?redirect=' + encodeURIComponent(redirectUrl));
+  //   } catch (error: any) {
+  //     toast.error(error.message || 'Registration failed');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password ||
-      !formData.businessName || !formData.location || !formData.craftType || !formData.experience || !formData.story) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+  if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone ||
+      !formData.password || !formData.businessName || !formData.location ||
+      !formData.craftType || !formData.experience || !formData.story) {
+    toast.error("Please fill in all required fields");
+    return;
+  }
 
-    if (!certificateFile) {
-      toast.error('Please upload your artisan certificate');
-      return;
-    }
+  if (!certificateFile) {
+    toast.error("Please upload your artisan certificate");
+    return;
+  }
 
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long');
-      return;
-    }
+  if (formData.password.length < 6) {
+    toast.error("Password must be at least 6 characters");
+    return;
+  }
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
+  if (formData.password !== formData.confirmPassword) {
+    toast.error("Passwords do not match");
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      await register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        role: 'producer',
-        phone: formData.phone,
-        businessName: formData.businessName,
-        location: formData.location,
-        craftType: formData.craftType,
-        experience: formData.experience,
-        story: formData.story,
-        productTypes: formData.craftType ? [formData.craftType] : [],
-        bankAccountName: bank.bankAccountName,
-        bankAccountNumber: bank.bankAccountNumber,
-        bankIfsc: bank.bankIfsc,
-        bankName: bank.bankName,
-        bankBranch: bank.bankBranch,
-        certificate: certificateFile,
-      });
-      toast.success('Registration successful! Please check your email to verify your account.');
-      navigate('/verify-email?redirect=' + encodeURIComponent(redirectUrl));
-    } catch (error: any) {
-      toast.error(error.message || 'Registration failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    setIsLoading(true);
+    const fd = new FormData();
+
+    fd.append("firstName", formData.firstName);
+    fd.append("lastName", formData.lastName);
+    fd.append("email", formData.email);
+    fd.append("phone", formData.phone);
+    fd.append("password", formData.password);
+    fd.append("role", "producer");
+
+    fd.append("businessName", formData.businessName);
+    fd.append("location", formData.location);
+    fd.append("craftType", formData.craftType);
+    fd.append("experience", formData.experience);
+    fd.append("story", formData.story);
+
+    // productTypes is an array → stringify it
+    fd.append("productTypes", JSON.stringify([formData.craftType]));
+
+    // Bank details
+    fd.append("bankAccountName", bank.bankAccountName);
+    fd.append("bankAccountNumber", bank.bankAccountNumber);
+    fd.append("bankIfsc", bank.bankIfsc);
+    fd.append("bankName", bank.bankName);
+    fd.append("bankBranch", bank.bankBranch);
+
+    // Certificate file
+    fd.append("certificate", certificateFile);
+
+    // Final call
+    await register(fd);
+
+    toast.success("Registration successful! Check your email.");
+    navigate("/verify-email?redirect=" + encodeURIComponent(redirectUrl));
+
+  } catch (error: any) {
+    toast.error(error.message || "Registration failed");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-background py-12">
