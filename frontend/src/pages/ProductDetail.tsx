@@ -53,6 +53,7 @@ const ProductDetail: React.FC = () => {
                 } else {
                     setProduct({
                         id: p._id,
+                        slug: p.slug, // Include slug for URL-friendly navigation
                         name: p.name,
                         description: p.description,
                         price: p.price,

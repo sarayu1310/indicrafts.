@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const mongoose = require("mongoose");
 const { cloudinary } = require("../services/cloudinary");
 const shippingService = require("../services/shippingService");
 // TODO: MIGRATION TO AWS S3 - Uncomment when ready to switch
@@ -179,7 +180,16 @@ const listProducts = async (_req, res) => {
 
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Try to find by slug first (URL-friendly), then fallback to MongoDB ID
+    let product = await Product.findOne({ slug: id });
+    
+    // If not found by slug, try MongoDB ID (backward compatibility)
+    if (!product && mongoose.Types.ObjectId.isValid(id)) {
+      product = await Product.findById(id);
+    }
+    
     if (!product) return res.status(404).json({ message: "Product not found" });
     // If not approved, only allow producer or admin to view
     if (!product.isApproved) {

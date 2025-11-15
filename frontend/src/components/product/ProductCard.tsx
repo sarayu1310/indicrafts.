@@ -60,7 +60,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const handleViewDetails = () => {
-    navigate(`/product/${product.id}`);
+    // Use slug if available, fallback to id for backward compatibility
+    const identifier = (product as any).slug || product.id;
+    navigate(`/product/${identifier}`);
   };
 
   const categoryInfo = getCategoryImportance(product.category);

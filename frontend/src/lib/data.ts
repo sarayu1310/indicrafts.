@@ -2,6 +2,7 @@
 
 export interface Product {
   id: string;
+  slug?: string; // URL-friendly product identifier
   name: string;
   description: string;
   price: number;

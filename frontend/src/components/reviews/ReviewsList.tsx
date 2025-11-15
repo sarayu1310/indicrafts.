@@ -79,7 +79,8 @@ const ReviewsList: React.FC<ReviewsListProps> = ({
 
     const hasUserVoted = (review: Review, isHelpful: boolean) => {
         if (!user) return false;
-        const userId = user._id || user.id;
+        // Handle both _id (from MongoDB) and id (normalized) formats
+        const userId = ('_id' in user ? user._id : null) || user.id;
         if (isHelpful) {
             return review.helpfulUsers?.some((id) => id === userId) || false;
         } else {

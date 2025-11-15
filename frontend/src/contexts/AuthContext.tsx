@@ -3,6 +3,7 @@ import { apiService } from '@/services/api';
 
 interface User {
     id: string;
+    _id?: string; // MongoDB _id (may be present in some API responses)
     firstName: string;
     lastName: string;
     name: string;
