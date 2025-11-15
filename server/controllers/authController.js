@@ -16,17 +16,23 @@ const registerUser = async (req, res) => {
     // Ensure we can destructure even if req.body is undefined due to Content-Type mismatch
     // const body = req.body || {};
     // const body = req.body && Object.keys(req.body).length ? req.body : JSON.parse(JSON.stringify(req.body || {}));
+    // const body = req.body;
+    if (!req.body) {
+      console.log("req.body is undefined");
+      return res.status(400).json({ message: "No request body received" });
+    }
     const body = req.body;
 
-    if (!body || !body.firstName) {
-      // If req.body is empty, request might be JSON — parse it manually
-      try {
-        const raw = req.body ? req.body : JSON.parse(req.rawBody || "{}");
-        Object.assign(body, raw);
-      } catch (e) {
-        console.error("Body parse error:", e);
-      }
-    }
+
+    // if (!body || !body.firstName) {
+    //   // If req.body is empty, request might be JSON — parse it manually
+    //   try {
+    //     const raw = req.body ? req.body : JSON.parse(req.rawBody || "{}");
+    //     Object.assign(body, raw);
+    //   } catch (e) {
+    //     console.error("Body parse error:", e);
+    //   }
+    // }
     let {
       firstName,
       lastName,
