@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Heart, Share2, ShoppingCart, Plus, Minus, Star, MapPin, User, Truck, Shield, RotateCcw, Edit2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, ShoppingCart, Plus, Minus, Star, MapPin, User, Truck, Shield, RotateCcw, Edit2, Trash2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,10 @@ import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
 import apiService from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
+import StarRating from '@/components/reviews/StarRating';
+import ReviewForm from '@/components/reviews/ReviewForm';
+import RatingBreakdown from '@/components/reviews/RatingBreakdown';
+import ReviewsList from '@/components/reviews/ReviewsList';
 
 const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -24,6 +28,21 @@ const ProductDetail: React.FC = () => {
     const [product, setProduct] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // Reviews state
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [reviewStats, setReviewStats] = useState<{
+        averageRating: number;
+        totalReviews: number;
+        ratingBreakdown: { 5: number; 4: number; 3: number; 2: number; 1: number };
+    }>({
+        averageRating: 0,
+        totalReviews: 0,
+        ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+    });
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+
+    // Fetch product
     useEffect(() => {
         (async () => {
             try {
@@ -57,6 +76,31 @@ const ProductDetail: React.FC = () => {
                 setLoading(false);
             }
         })();
+    }, [id]);
+
+    // Fetch reviews
+    const fetchReviews = async () => {
+        if (!id) return;
+        setReviewsLoading(true);
+        try {
+            const res = await apiService.getProductReviews(id, { limit: 50 });
+            setReviews((res as any).reviews || []);
+            setReviewStats((res as any).statistics || {
+                averageRating: 0,
+                totalReviews: 0,
+                ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+            });
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (id) {
+            fetchReviews();
+        }
     }, [id]);
 
 
@@ -266,14 +310,13 @@ const ProductDetail: React.FC = () => {
 
                             <div className="flex items-center space-x-3 mb-4">
                                 <div className="flex items-center">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className={`h-4 w-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                                        />
-                                    ))}
+                                    <StarRating
+                                        rating={reviewStats.averageRating}
+                                        size="sm"
+                                        showLabel
+                                    />
                                     <span className="ml-2 text-sm text-muted-foreground">
-                                        (4.5) • 0 reviews
+                                        ({reviewStats.totalReviews} {reviewStats.totalReviews === 1 ? 'review' : 'reviews'})
                                     </span>
                                 </div>
                                 <Badge variant="secondary">{product.category}</Badge>
@@ -453,6 +496,63 @@ const ProductDetail: React.FC = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Reviews & Ratings Section */}
+                <div className="mt-16 space-y-8">
+                    <Separator />
+
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-merriweather text-3xl font-bold">Reviews & Ratings</h2>
+                        {isAuthenticated && user?.role !== 'producer' && (
+                            <Button
+                                onClick={() => setShowReviewForm(!showReviewForm)}
+                                variant={showReviewForm ? "outline" : "default"}
+                            >
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                {showReviewForm ? 'Cancel Review' : 'Write a Review'}
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Review Form */}
+                    {showReviewForm && (
+                        <ReviewForm
+                            productId={product.id}
+                            onReviewSubmitted={() => {
+                                setShowReviewForm(false);
+                                fetchReviews();
+                            }}
+                            onCancel={() => setShowReviewForm(false)}
+                        />
+                    )}
+
+                    {/* Reviews Content */}
+                    {!reviewsLoading ? (
+                        <div className="grid lg:grid-cols-3 gap-8">
+                            {/* Rating Breakdown - Left Sidebar */}
+                            <div className="lg:col-span-1">
+                                <RatingBreakdown
+                                    averageRating={reviewStats.averageRating}
+                                    totalReviews={reviewStats.totalReviews}
+                                    ratingBreakdown={reviewStats.ratingBreakdown}
+                                />
+                            </div>
+
+                            {/* Reviews List - Right Content */}
+                            <div className="lg:col-span-2">
+                                <ReviewsList
+                                    productId={product.id}
+                                    reviews={reviews}
+                                    onHelpfulUpdate={fetchReviews}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-12">
+                            <p className="text-muted-foreground">Loading reviews...</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

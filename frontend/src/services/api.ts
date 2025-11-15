@@ -470,6 +470,61 @@ class ApiService {
   async removeFromWishlist(productId: string): Promise<ApiResponse<{ wishlist: any[] }>> {
     return this.request(`/auth/wishlist/${productId}`, { method: 'DELETE' });
   }
+
+  // Reviews
+  async submitReview(formData: FormData): Promise<ApiResponse<{ review: any }>> {
+    const token = localStorage.getItem(getRoleScopedTokenKey());
+    const response = await fetch(`${this.baseURL}/reviews`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to submit review');
+    }
+    return data;
+  }
+
+  async getProductReviews(
+    productId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      sort?: 'recent' | 'helpful' | 'rating-high' | 'rating-low';
+    }
+  ): Promise<ApiResponse<{
+    reviews: any[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+    statistics: {
+      averageRating: number;
+      totalReviews: number;
+      ratingBreakdown: { 5: number; 4: number; 3: number; 2: number; 1: number };
+    };
+  }>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', String(params.page));
+    if (params?.limit) queryParams.append('limit', String(params.limit));
+    if (params?.sort) queryParams.append('sort', params.sort);
+    const qs = queryParams.toString();
+    return this.request(`/reviews/product/${productId}${qs ? `?${qs}` : ''}`);
+  }
+
+  async updateReviewHelpful(
+    reviewId: string,
+    isHelpful: boolean
+  ): Promise<ApiResponse<{ review: { _id: string; helpfulCount: number; notHelpfulCount: number } }>> {
+    return this.request(`/reviews/${reviewId}/helpful`, {
+      method: 'POST',
+      body: JSON.stringify({ isHelpful }),
+    });
+  }
+
+  async deleteReview(reviewId: string): Promise<ApiResponse> {
+    return this.request(`/reviews/${reviewId}`, { method: 'DELETE' });
+  }
 }
 
 export const apiService = new ApiService();
