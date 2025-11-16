@@ -30,6 +30,21 @@ app.use(
 // Connect to MongoDB
 connectDB();
 
+app.use((req, res, next) => {
+  console.log(`\n[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log('Content-Type:', req.get('Content-Type'));
+  console.log('Body exists:', !!req.body);
+  console.log('Body keys:', req.body ? Object.keys(req.body) : 'none');
+  console.log('File exists:', !!req.file);
+  
+  // Only log body content for non-production environments
+  if (process.env.NODE_ENV !== 'production' && req.body) {
+    console.log('Body preview:', JSON.stringify(req.body).substring(0, 200));
+  }
+  
+  next();
+});
+
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const contactRoutes = require("./routes/contactRoutes");

@@ -36,13 +36,13 @@ const upload = multer({
 });
 
 // Public routes
-// router.post("/register", upload.single("certificate"), registerUser);
-router.post(
-  "/register",
-  upload.none(),  
-  upload.single("certificate"),
-  registerUser
-);
+router.post("/register", upload.single("certificate"), registerUser);
+// router.post(
+//   "/register",
+//   upload.none(),  
+//   upload.single("certificate"),
+//   registerUser
+// );
 
 router.post("/login", loginUser);
 router.post("/verify-email", verifyEmail);
