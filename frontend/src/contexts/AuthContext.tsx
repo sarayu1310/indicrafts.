@@ -152,7 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const register = async (formData: FormData) => {
   try {
     const res = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/auth/register`,
+      `${import.meta.env.VITE_API_BASE_URL}/auth/register`,
       formData,
       {
         headers: {
